@@ -1,0 +1,29 @@
+model: resnet18
+learning_rate: 2e-3
+scheduler_patient: 1
+data_config:
+  dataset_name: image_classification_dataset
+  img_size:
+  - 64
+  - 64
+  batch_size: 32
+  data_split:
+  - 0.8
+  - 0.2
+  num_workers: 4
+  pin_memory: true
+trainer_config:
+  min_epochs: 7
+  max_epochs: 2
+  check_val_every_n_epoch: 1
+  log_every_n_steps: 1
+  gradient_clip_val: null
+  gradient_clip_algorithm: null
+  deterministic: false
+  fast_dev_run: false
+  default_root_dir: null
+  detect_anomaly: false
+project_config:
+  project_name: image_classification
+  experiment_name: image_classification
+  track_in_clearml: true
