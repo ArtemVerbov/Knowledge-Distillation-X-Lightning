@@ -4,8 +4,6 @@ from typing import Dict, Optional
 import torch
 from clearml import Dataset as ClearmlDataset
 from lightning import LightningDataModule
-
-# from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
 from src.config import DataConfig

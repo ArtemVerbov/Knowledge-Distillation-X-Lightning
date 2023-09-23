@@ -22,14 +22,9 @@ class Transforms:
         return [
             albu.Resize(height=self.img_height, width=self.img_width),
             albu.HorizontalFlip(),
-            # albu.HueSaturationValue(hue_shift_limit=20, sat_shift_limit=30, val_shift_limit=20, p=0.5),
-            # albu.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5),
-            # albu.ShiftScaleRotate(),
-            # albu.GaussianBlur(),
             albu.CenterCrop(height=self.img_height, width=self.img_width, p=0.5),
-            # albu.ColorJitter(),
-            # albu.RandomRotate90(),
-            albu.VerticalFlip(),
+            albu.ColorJitter(),
+            albu.RandomRotate90(),
             albu.Normalize(),
             ToTensorV2(),
         ]

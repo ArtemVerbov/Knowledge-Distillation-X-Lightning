@@ -26,7 +26,7 @@ class ClassificationLightningModule(LightningModule):
         self.frequency = cfg.trainer_config.check_val_every_n_epoch
         self.lr = cfg.learning_rate
         self.patient = cfg.scheduler_patient
-        self.model = timm.create_model(cfg.model, pretrained=False, num_classes=len(class_to_idx))
+        self.model = timm.create_model(cfg.model, pretrained=True, num_classes=len(class_to_idx))
 
         self._valid_metrics = metrics.clone(prefix='valid_')
         self._test_metrics = metrics.clone(prefix='test_')
@@ -74,7 +74,7 @@ class ClassificationLightningModule(LightningModule):
     def configure_optimizers(self) -> dict:
         # TODO: parametrize optimizer and lr scheduler.
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)  # noqa: WPS432 will be parametrized
-        scheduler = ReduceLROnPlateau(optimizer, patience=self.patient)
+        scheduler = ReduceLROnPlateau(optimizer, patience=self.patient, verbose=True)
 
         return {
             'optimizer': optimizer,
@@ -82,6 +82,6 @@ class ClassificationLightningModule(LightningModule):
                 'scheduler': scheduler,
                 'interval': 'epoch',
                 'frequency': self.frequency,
-                'monitor': 'val_loss',
+                'monitor': 'mean_valid_loss',
             },
         }
