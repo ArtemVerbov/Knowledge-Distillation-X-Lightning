@@ -11,7 +11,7 @@ from src.dataset import ClassificationDataset
 from src.transforms import Transforms
 
 
-class ClassificationDataModule(LightningDataModule):
+class ClassificationDataModule(LightningDataModule):  # noqa: WPS230
     def __init__(
         self,
         cfg: DataConfig,
@@ -37,7 +37,7 @@ class ClassificationDataModule(LightningDataModule):
             self.setup('test')
         return self.data_test.class_to_idx
 
-    def prepare_data(self):
+    def prepare_data(self) -> None:
         self.data_path = Path(ClearmlDataset.get(dataset_name=self.cfg.dataset_name).get_local_copy())
 
     def setup(self, stage: str):

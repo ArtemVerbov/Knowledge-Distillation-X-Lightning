@@ -13,7 +13,7 @@ from src.datamodule import ClassificationDataModule
 from src.lightning_module import ClassificationLightningModule
 
 
-def train(cfgs: ExperimentConfig):
+def train(cfgs: ExperimentConfig):  # noqa: WPS210
     lightning.seed_everything(0)
     Task.force_requirements_env_freeze()
     task = Task.init(
@@ -41,6 +41,7 @@ def train(cfgs: ExperimentConfig):
             visualize,
             matrix_logger,
         ],
+        overfit_batches = 10
     )
     trainer.fit(model=model, datamodule=datamodule)
     trainer.test(model=model, datamodule=datamodule)
