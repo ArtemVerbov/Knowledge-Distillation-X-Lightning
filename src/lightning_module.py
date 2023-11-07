@@ -6,12 +6,12 @@ import torch.nn.functional as func
 from lightning import LightningModule
 from torch import Tensor
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from torchmetrics import ConfusionMatrix, MeanMetric
+from torchmetrics import MeanMetric
 
 from src.metrics import get_metrics
 
 
-class ClassificationLightningModule(LightningModule):
+class ClassificationLightningModule(LightningModule):  # noqa: WPS214
     def __init__(self, cfg, class_to_idx: Dict[str, int]):
         super().__init__()
         self._train_loss = MeanMetric()
@@ -33,7 +33,6 @@ class ClassificationLightningModule(LightningModule):
         self.save_hyperparameters()
 
     def forward(self, images: Tensor) -> Tensor:
-        # return self.model(images.float())
         return self.model(images)
 
     def training_step(self, batch: List[Tensor]):  # noqa: WPS210
@@ -71,7 +70,7 @@ class ClassificationLightningModule(LightningModule):
     def on_test_epoch_end(self) -> None:
         self.log_dict(self._test_metrics, prog_bar=True, on_epoch=True)
 
-    def configure_optimizers(self) -> dict:
+    def configure_optimizers(self) -> Dict:
         # TODO: parametrize optimizer and lr scheduler.
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)  # noqa: WPS432 will be parametrized
         scheduler = ReduceLROnPlateau(optimizer, patience=self.patient, verbose=True)

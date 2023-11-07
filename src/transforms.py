@@ -1,9 +1,12 @@
 import albumentations as albu
+from albumentations import BasicTransform
+from typing import List, Any
+from torch import Tensor
 from albumentations.pytorch import ToTensorV2
 from torchvision.transforms import transforms
 
 
-def inv_trans(tensor):
+def inv_trans(tensor) -> Tensor:
     inv_norm = transforms.Compose(
         [
             transforms.Normalize(mean=[0.0, 0.0, 0.0], std=[1 / 0.229, 1 / 0.224, 1 / 0.225]),
@@ -14,11 +17,11 @@ def inv_trans(tensor):
 
 
 class Transforms:
-    def __init__(self, img_height, img_width):
+    def __init__(self, img_height: int, img_width: int):
         self.img_height = img_height
         self.img_width = img_width
 
-    def get_train_transforms(self):
+    def get_train_transforms(self) -> List[BasicTransform]:
         return [
             albu.Resize(height=self.img_height, width=self.img_width),
             albu.HorizontalFlip(),
@@ -29,14 +32,14 @@ class Transforms:
             ToTensorV2(),
         ]
 
-    def get_val_transforms(self):
+    def get_val_transforms(self) -> List[BasicTransform]:
         return [
             albu.Resize(height=self.img_height, width=self.img_width),
             albu.Normalize(),
             ToTensorV2(),
         ]
 
-    def compose(self, stage):
+    def compose(self, stage: str) -> albu.Compose:
         if stage == 'fit':
             return albu.Compose(self.get_train_transforms())
         else:
