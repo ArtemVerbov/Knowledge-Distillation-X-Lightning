@@ -1,33 +1,31 @@
+from dataclasses import field
 from pathlib import Path
-from typing import Literal, Optional, Tuple, Union
+from typing import Literal, Optional, Tuple
 
-import yaml
-from omegaconf import OmegaConf
-from pydantic import BaseModel, ConfigDict, Field, model_validator
-
-
-class _BaseValidatedConfig(BaseModel):
-    model_config = ConfigDict(extra='forbid')  # Disallow unexpected arguments.
+from pydantic import ConfigDict, model_validator
+from pydantic.dataclasses import dataclass
 
 
-class DataConfig(_BaseValidatedConfig):
+@dataclass(config=ConfigDict(extra='forbid', validate_assignment=True))
+class DataConfig:
     dataset_name: str = 'classification_data'
     img_size: Tuple[int, int] = (224, 224)
     batch_size: int = 32
     data_split: Tuple[float, ...] = (0.8, 0.2)
     num_workers: int = 0
     pin_memory: bool = True
+    persistent_workers: bool = True
 
     @model_validator(mode='after')
     def splits_add_up_to_one(self) -> 'DataConfig':
         epsilon = 1e-5
         total = sum(self.data_split)
-        if abs(total - 1) > epsilon:
-            raise ValueError(f'Splits should add up to 1, got {total}.')
+        assert (abs(total - 1) < epsilon), f'Split should add up to 1, got {total}'
         return self
 
 
-class TrainerConfig(_BaseValidatedConfig):
+@dataclass(config=ConfigDict(extra='forbid', validate_assignment=True))
+class TrainerConfig:
     min_epochs: int = 7  # prevents early stopping
     max_epochs: int = 20
 
@@ -47,27 +45,40 @@ class TrainerConfig(_BaseValidatedConfig):
     default_root_dir: Optional[Path] = None
 
     detect_anomaly: bool = False
+    accelerator: str = 'auto'
 
 
-class ProjectConfig(_BaseValidatedConfig):
-    project_name: str = 'test'
-    experiment_name: str = 'image_classification'
+@dataclass(config=ConfigDict(extra='forbid', validate_assignment=True))
+class ProjectConfig:
+    project_name: str = 'image_classification'
+    experiment_name: str = 'hydra_config'
     track_in_clearml: bool = True
 
 
-class ExperimentConfig(_BaseValidatedConfig):
-    model: str = 'resnet18'
-    learning_rate: float = 2e-3
-    scheduler_patient: int = 1
-    trainer_config: TrainerConfig = Field(default=TrainerConfig())
-    data_config: DataConfig = Field(default=DataConfig())
-    project_config: ProjectConfig = Field(default=ProjectConfig())
+@dataclass(config=ConfigDict(extra='forbid', validate_assignment=True))
+class ModelConfig:
+    model: str
+    optimizer_frequency: int = 3
+    interval: str = 'epoch'
+    monitor: str = 'mean_valid_loss'
 
-    @classmethod
-    def from_yaml(cls, path: Union[str, Path]) -> 'ExperimentConfig':
-        cfg = OmegaConf.to_container(OmegaConf.load(path), resolve=True)
-        return cls(**cfg)
 
-    def to_yaml(self, path: Union[str, Path]):
-        with open(path, 'w') as out_file:
-            yaml.safe_dump(self.model_dump(), out_file, default_flow_style=False, sort_keys=False)
+@dataclass(config=ConfigDict(extra='forbid', validate_assignment=True))
+class ExperimentConfig:
+    model_config: ModelConfig = field(default=ModelConfig)
+    data_config: DataConfig = field(default=DataConfig)
+    trainer_config: TrainerConfig = field(default=TrainerConfig)
+    project_config: ProjectConfig = field(default=ProjectConfig)
+
+    @model_validator(mode='after')
+    def scheduler_monitor_check(self) -> 'ExperimentConfig':
+        if 'valid' in self.model_config.monitor:
+            assert (self.model_config.optimizer_frequency % self.trainer_config.check_val_every_n_epoch == 0
+                    ), """If "monitor" references validation metric/loss "model_config.optimizer_frequency" parameter
+             should be set to a multiple of "trainer_config.check_val_every_n_epoch."""
+
+        if 'mean' in self.model_config.monitor:
+            assert (self.model_config.interval == 'epoch'
+                    ), """If "monitor" references any "mean" metric/loss "model_config.interval"
+                    should be set to "epoch"""
+        return self
