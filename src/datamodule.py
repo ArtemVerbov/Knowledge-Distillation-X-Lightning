@@ -66,6 +66,7 @@ class ClassificationDataModule(LightningDataModule):  # noqa: WPS230
             batch_size=self.cfg.batch_size,
             num_workers=self.cfg.num_workers,
             pin_memory=self.cfg.pin_memory,
+            persistent_workers=self.cfg.persistent_workers,
             shuffle=True,
         )
 
@@ -75,6 +76,7 @@ class ClassificationDataModule(LightningDataModule):  # noqa: WPS230
             batch_size=self.cfg.batch_size,
             num_workers=self.cfg.num_workers,
             pin_memory=self.cfg.pin_memory,
+            persistent_workers=self.cfg.persistent_workers,
             shuffle=False,
         )
 
@@ -84,5 +86,6 @@ class ClassificationDataModule(LightningDataModule):  # noqa: WPS230
             batch_size=self.cfg.batch_size,
             num_workers=self.cfg.num_workers,
             pin_memory=self.cfg.pin_memory,
+            persistent_workers=self.cfg.persistent_workers,
             shuffle=False,
         )

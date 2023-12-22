@@ -1,21 +1,32 @@
-from typing import Dict, List
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 import timm
-import torch
 import torch.nn.functional as func
 from lightning import LightningModule
 from torch import Tensor
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchmetrics import MeanMetric
 
+from src.config import ModelConfig
 from src.metrics import get_metrics
+
+if TYPE_CHECKING:
+    from torch.optim import Adam
 
 
 class ClassificationLightningModule(LightningModule):  # noqa: WPS214
-    def __init__(self, cfg, class_to_idx: Dict[str, int]):
+    def __init__(
+        self,
+        model_cfg: ModelConfig,
+        class_to_idx: Dict[str, int],
+        optimizer: 'Adam',
+        scheduler: Optional['ReduceLROnPlateau'] = None,
+    ):
         super().__init__()
         self._train_loss = MeanMetric()
         self._valid_loss = MeanMetric()
+        self.optimizer = optimizer
+        self.scheduler = scheduler
 
         metrics = get_metrics(
             num_classes=len(class_to_idx),
@@ -23,10 +34,9 @@ class ClassificationLightningModule(LightningModule):  # noqa: WPS214
             task='multiclass',
             average='macro',
         )
-        self.frequency = cfg.trainer_config.check_val_every_n_epoch
-        self.lr = cfg.learning_rate
-        self.patient = cfg.scheduler_patient
-        self.model = timm.create_model(cfg.model, pretrained=True, num_classes=len(class_to_idx))
+        self.frequency = model_cfg.optimizer_frequency
+        self.model_cfg = model_cfg
+        self.model = timm.create_model(self.model_cfg.model, pretrained=True, num_classes=len(class_to_idx))
 
         self._valid_metrics = metrics.clone(prefix='valid_')
         self._test_metrics = metrics.clone(prefix='test_')
@@ -70,17 +80,19 @@ class ClassificationLightningModule(LightningModule):  # noqa: WPS214
     def on_test_epoch_end(self) -> None:
         self.log_dict(self._test_metrics, prog_bar=True, on_epoch=True)
 
+    # noinspection PyCallingNonCallable
     def configure_optimizers(self) -> Dict:
-        # TODO: parametrize optimizer and lr scheduler.
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)  # noqa: WPS432 will be parametrized
-        scheduler = ReduceLROnPlateau(optimizer, patience=self.patient, verbose=True)
+        optimizer = self.optimizer(params=self.parameters())
+        if self.scheduler:
+            scheduler = self.scheduler(optimizer)
 
-        return {
-            'optimizer': optimizer,
-            'lr_scheduler': {
-                'scheduler': scheduler,
-                'interval': 'epoch',
-                'frequency': self.frequency,
-                'monitor': 'mean_valid_loss',
-            },
-        }
+            return {
+                'optimizer': optimizer,
+                'lr_scheduler': {
+                    'scheduler': scheduler,
+                    'interval': self.model_cfg.interval,
+                    'frequency': self.model_cfg.optimizer_frequency,
+                    'monitor': self.model_cfg.monitor,
+                },
+            }
+        return {'optimizer': optimizer}
