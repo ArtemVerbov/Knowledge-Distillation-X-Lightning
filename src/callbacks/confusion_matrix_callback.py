@@ -9,8 +9,9 @@ from torchmetrics import ConfusionMatrix
 class ConfusionMatrixLogging(Callback):
     def __init__(self, class_to_idx: Dict[str, int]):
         super().__init__()
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.labels = list(class_to_idx.keys())
-        self._confusion_matrix = ConfusionMatrix(task='multiclass', num_classes=len(self.labels))
+        self._confusion_matrix = ConfusionMatrix(task='multiclass', num_classes=len(self.labels)).to(device)
         self.predicts: List[Tensor] = []
         self.targets: List[Tensor] = []
 

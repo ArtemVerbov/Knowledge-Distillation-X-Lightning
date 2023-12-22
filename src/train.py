@@ -57,7 +57,7 @@ def train(cfg: 'DictConfig'):  # noqa: WPS210
     lr_logger = LearningRateMonitor(logging_interval='epoch')
     visualize = VisualizeBatch(every_n_epochs=5)
     matrix_logger = ConfusionMatrixLogging(datamodule.class_to_idx)
-    early_stopping = EarlyStopping('mean_valid_loss')
+    early_stopping = EarlyStopping(monitor='mean_valid_loss', patience=5)
     check_points = ModelCheckpoint(monitor='valid_f1', mode='max', verbose=True)
 
     trainer = Trainer(

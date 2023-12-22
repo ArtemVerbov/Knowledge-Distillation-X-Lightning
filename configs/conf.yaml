@@ -21,7 +21,7 @@ experiment_config:
     img_size:
     - 224
     - 224
-    batch_size: 32
+    batch_size: 128
     data_split:
     - 0.8
     - 0.2
@@ -31,7 +31,7 @@ experiment_config:
   trainer_config:
     _target_: src.config.TrainerConfig
     min_epochs: 5
-    max_epochs: 18
+    max_epochs: 54
     check_val_every_n_epoch: 3
     log_every_n_steps: 1
     gradient_clip_val: null
