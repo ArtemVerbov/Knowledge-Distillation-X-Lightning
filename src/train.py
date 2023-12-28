@@ -69,7 +69,7 @@ def train(cfg: 'DictConfig'):  # noqa: WPS210
             early_stopping,
             check_points,
         ],
-        overfit_batches=10
+        # overfit_batches=10
     )
     trainer.fit(model=model, datamodule=datamodule)
     trainer.test(model=model, datamodule=datamodule, ckpt_path='best')
