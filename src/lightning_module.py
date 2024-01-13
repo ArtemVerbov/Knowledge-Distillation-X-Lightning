@@ -4,14 +4,14 @@ import timm
 import torch.nn.functional as func
 from lightning import LightningModule
 from torch import Tensor
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchmetrics import MeanMetric
 
 from src.config import ModelConfig
 from src.metrics import get_metrics
 
 if TYPE_CHECKING:
-    from torch.optim import Adam
+    from torch.optim import Optimizer
+    from torch.optim.lr_scheduler import LRScheduler
 
 
 class ClassificationLightningModule(LightningModule):  # noqa: WPS214
@@ -19,8 +19,8 @@ class ClassificationLightningModule(LightningModule):  # noqa: WPS214
         self,
         model_cfg: ModelConfig,
         class_to_idx: Dict[str, int],
-        optimizer: 'Adam',
-        scheduler: Optional['ReduceLROnPlateau'] = None,
+        optimizer: 'Optimizer',
+        scheduler: Optional['LRScheduler'] = None,
     ):
         super().__init__()
         self._train_loss = MeanMetric()

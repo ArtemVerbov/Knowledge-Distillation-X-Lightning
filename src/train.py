@@ -20,8 +20,8 @@ from src.lightning_module import ClassificationLightningModule
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
-    from torch.optim import Adam
-    from torch.optim.lr_scheduler import ReduceLROnPlateau
+    from torch.optim import Optimizer
+    from torch.optim.lr_scheduler import LRScheduler
 
 
 # noinspection PyDataclass
@@ -29,23 +29,24 @@ if TYPE_CHECKING:
 def train(cfg: 'DictConfig'):  # noqa: WPS210
 
     experiment_config: ExperimentConfig = hydra.utils.instantiate(cfg.experiment_config)
-    opt: 'Adam' = hydra.utils.instantiate(cfg.optimizer)
-    scheduler: 'ReduceLROnPlateau' = hydra.utils.instantiate(cfg.scheduler)
+    opt: 'Optimizer' = hydra.utils.instantiate(cfg.optimizer)
+    scheduler: 'LRScheduler' = hydra.utils.instantiate(cfg.scheduler)
 
     lightning.seed_everything(0)
-    Task.force_requirements_env_freeze()
-    task = Task.init(
-        project_name=experiment_config.project_config.project_name,
-        task_name=experiment_config.project_config.experiment_name,
-        # If `output_uri=True` uses default ClearML output URI,
-        # can use string value to specify custom storage URI like S3.
-        output_uri=True,
-    )
-    # Stores yaml config as a dictionary in clearml
-    task.connect(asdict(experiment_config))
-
     datamodule = ClassificationDataModule(cfg=experiment_config.data_config)
-    task.connect_configuration(datamodule.transforms.get_train_transforms(), name='transformations')
+
+    if experiment_config.project_config.track_in_clearml:
+        Task.force_requirements_env_freeze()
+        task = Task.init(
+            project_name=experiment_config.project_config.project_name,
+            task_name=experiment_config.project_config.experiment_name,
+            # If `output_uri=True` uses default ClearML output URI,
+            # can use string value to specify custom storage URI like S3.
+            output_uri=True,
+        )
+        # Stores yaml config as a dictionary in clearml
+        task.connect(asdict(experiment_config))
+        task.connect_configuration(datamodule.transforms.get_train_transforms(), name='transformations')
 
     model = ClassificationLightningModule(
         experiment_config.model_config,
