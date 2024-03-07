@@ -1,0 +1,21 @@
+module:
+  _target_: src.lightning_module.ClassificationLightningModule
+  _partial_: true
+  model:
+    _target_: timm.create_model
+    _partial_: true
+    model_name: resnet18
+    pretrained: true
+  optimizer:
+    _target_: torch.optim.Adam
+    _partial_: true
+    lr: 1e-4
+  loss:
+    _target_: torch.nn.functional.cross_entropy
+    _partial_: true
+  scheduler:
+    _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
+    _partial_: true
+    patience: 1
+    verbose: true
+experiment_name: teacher_model

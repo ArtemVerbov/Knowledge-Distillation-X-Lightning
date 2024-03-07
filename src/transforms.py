@@ -1,8 +1,9 @@
+from typing import List
+
 import albumentations as albu
 from albumentations import BasicTransform
-from typing import List, Any
-from torch import Tensor
 from albumentations.pytorch import ToTensorV2
+from torch import Tensor
 from torchvision.transforms import transforms
 
 

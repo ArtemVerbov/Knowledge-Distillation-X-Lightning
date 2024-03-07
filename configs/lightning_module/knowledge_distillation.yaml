@@ -1,0 +1,36 @@
+module:
+  _target_: src.knowledge_distillation_module.KnowledgeDistillationModule
+  _partial_: true
+  teacher_model:
+    _target_: src.teacher_loader.TeacherLoader
+    _partial_: true
+    model_to_create:
+      _target_: timm.create_model
+      _partial_: true
+      model_name: resnet18
+      pretrained: false
+    weights_name:
+      teacher.ckpt
+  student_model:
+    _target_: src.student_model.LightNN
+    _partial_: true
+    in_features: ${experiment_config.data_config.img_size}
+  optimizer:
+    _target_: torch.optim.Adam
+    _partial_: true
+    lr: 1e-4
+  loss:
+    _target_: torch.nn.functional.cross_entropy
+    _partial_: true
+    temperature: 2
+    soft_target_loss_weight: 0.25
+    ce_loss_weight: 0.75
+  distillation_loss:
+    _target_: src.knowledge_distillation_loss.knowledge_distillation_loss
+    _partial_: true
+  scheduler:
+    _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
+    _partial_: true
+    patience: 1
+    verbose: true
+experiment_name: knowledge_distillation

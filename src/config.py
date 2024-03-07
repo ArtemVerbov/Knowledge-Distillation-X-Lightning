@@ -57,7 +57,6 @@ class ProjectConfig:
 
 @dataclass(config=ConfigDict(extra='forbid', validate_assignment=True))
 class ModelConfig:
-    model: str
     optimizer_frequency: int = 3
     interval: str = 'epoch'
     monitor: str = 'mean_valid_loss'
