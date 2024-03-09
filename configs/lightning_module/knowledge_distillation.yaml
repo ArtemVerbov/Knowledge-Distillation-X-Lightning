@@ -12,9 +12,9 @@ module:
     weights_name:
       teacher.ckpt
   student_model:
-    _target_: src.student_model.LightNN
+    _target_: src.student_model.ResNet9
     _partial_: true
-    in_features: ${experiment_config.data_config.img_size}
+    in_channels: 3
   optimizer:
     _target_: torch.optim.Adam
     _partial_: true
@@ -22,12 +22,12 @@ module:
   loss:
     _target_: torch.nn.functional.cross_entropy
     _partial_: true
-    temperature: 2
-    soft_target_loss_weight: 0.25
-    ce_loss_weight: 0.75
   distillation_loss:
     _target_: src.knowledge_distillation_loss.knowledge_distillation_loss
     _partial_: true
+    temperature: 1
+    soft_target_loss_weight: 0.25
+    ce_loss_weight: 0.75
   scheduler:
     _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
     _partial_: true

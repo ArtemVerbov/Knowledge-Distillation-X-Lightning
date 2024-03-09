@@ -7,7 +7,7 @@ def knowledge_distillation_loss(
     teacher_logits: Tensor,
     student_logits: Tensor,
     label_loss: Tensor,
-    temperature: int,
+    temperature: float,
     soft_target_loss_weight: float,
     ce_loss_weight: float,
 ):

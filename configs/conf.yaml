@@ -12,8 +12,8 @@ experiment_config:
     _target_: src.config.DataConfig
     dataset_name: image_classification_dataset
     img_size:
-    - 64
-    - 64
+    - 128
+    - 128
     batch_size: 128
     data_split:
     - 0.8

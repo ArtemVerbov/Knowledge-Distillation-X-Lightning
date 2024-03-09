@@ -2,9 +2,9 @@ module:
   _target_: src.lightning_module.ClassificationLightningModule
   _partial_: true
   model:
-    _target_: src.student_model.LightNN
+    _target_: src.student_model.ResNet9
     _partial_: true
-    in_features: ${experiment_config.data_config.img_size}
+    in_channels: 3
   optimizer:
     _target_: torch.optim.Adam
     _partial_: true
