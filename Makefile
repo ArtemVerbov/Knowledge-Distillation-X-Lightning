@@ -5,6 +5,7 @@ DROPBOX_DATASET := .dropbox_dataset
 CLEARML_PROJECT_NAME := image_classification
 CLEARML_DATASET_NAME := image_classification_dataset
 
+WEIGHTS_FOLDER := teacher_weights
 
 migrate_dataset:
 	# Migrate dataset to ClearML datasets.
@@ -18,4 +19,12 @@ migrate_dataset:
 	clearml-data add --files $(DROPBOX_DATASET)
 	clearml-data close --verbose
 	rm -R $(DROPBOX_DATASET)
+
+download_weights:
+	# Download pretrain weights for teacher model.
+	rm -R $(WEIGHTS_FOLDER) || true
+	mkdir $(WEIGHTS_FOLDER)
+	wget "https://drive.usercontent.google.com/download?id=1VBOjPS0pn3IulzWSixCxJZE7mXWxxeJh&export=download&confirm=yes" -O $(WEIGHTS_FOLDER)/teacher.zip
+	unzip -q $(WEIGHTS_FOLDER)/teacher.zip -d $(WEIGHTS_FOLDER)
+	rm $(WEIGHTS_FOLDER)/teacher.zip
 

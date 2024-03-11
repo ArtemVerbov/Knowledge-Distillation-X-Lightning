@@ -16,21 +16,18 @@ from src.callbacks.debug import VisualizeBatch
 from src.config import ExperimentConfig
 from src.constants import CONFIG_PATH
 from src.datamodule import ClassificationDataModule
-from src.lightning_module import ClassificationLightningModule
 
 if TYPE_CHECKING:
+    from lightning import LightningModule
     from omegaconf import DictConfig
-    from torch.optim import Optimizer
-    from torch.optim.lr_scheduler import LRScheduler
 
 
 # noinspection PyDataclass
 @hydra.main(config_path=str(CONFIG_PATH), config_name='conf', version_base='1.2')
-def train(cfg: 'DictConfig'):  # noqa: WPS210
+def train(cfg: 'DictConfig') -> None:  # noqa: WPS210
 
     experiment_config: ExperimentConfig = hydra.utils.instantiate(cfg.experiment_config)
-    opt: 'Optimizer' = hydra.utils.instantiate(cfg.optimizer)
-    scheduler: 'LRScheduler' = hydra.utils.instantiate(cfg.scheduler)
+    module: 'LightningModule' = hydra.utils.instantiate(cfg.lightning_module.module)
 
     lightning.seed_everything(0)
     datamodule = ClassificationDataModule(cfg=experiment_config.data_config)
@@ -48,18 +45,16 @@ def train(cfg: 'DictConfig'):  # noqa: WPS210
         task.connect(asdict(experiment_config))
         task.connect_configuration(datamodule.transforms.get_train_transforms(), name='transformations')
 
-    model = ClassificationLightningModule(
+    model = module(
         experiment_config.model_config,
         class_to_idx=datamodule.class_to_idx,
-        optimizer=opt,
-        scheduler=scheduler,
     )
 
     lr_logger = LearningRateMonitor(logging_interval='epoch')
     visualize = VisualizeBatch(every_n_epochs=5)
     matrix_logger = ConfusionMatrixLogging(datamodule.class_to_idx)
     early_stopping = EarlyStopping(monitor='mean_valid_loss', patience=5)
-    check_points = ModelCheckpoint(monitor='valid_f1', mode='max', verbose=True)
+    check_points = ModelCheckpoint(monitor='valid_f1', mode='max', verbose=True, save_top_k=1)
 
     trainer = Trainer(
         **asdict(experiment_config.trainer_config),
@@ -70,7 +65,7 @@ def train(cfg: 'DictConfig'):  # noqa: WPS210
             early_stopping,
             check_points,
         ],
-        # overfit_batches=10
+        # overfit_batches=10,
     )
     trainer.fit(model=model, datamodule=datamodule)
     trainer.test(model=model, datamodule=datamodule, ckpt_path='best')

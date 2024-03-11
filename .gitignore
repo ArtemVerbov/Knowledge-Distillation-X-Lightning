@@ -1,3 +1,6 @@
 .dropbox_dataset
 /src/lightning_logs/
 /src/outputs
+.mypy_cache
+/outputs/
+/teacher_weights/

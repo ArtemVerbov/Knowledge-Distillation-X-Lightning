@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional
 
+import torch
 from lightning import LightningModule
 from torch import Tensor
 from torchmetrics import MeanMetric
@@ -12,14 +13,16 @@ if TYPE_CHECKING:
     from torch.optim.lr_scheduler import LRScheduler
 
 
-class ClassificationLightningModule(LightningModule):  # noqa: WPS214
+class KnowledgeDistillationModule(LightningModule):  # noqa: WPS214
     def __init__(
         self,
         model_cfg: ModelConfig,
         class_to_idx: Dict[str, int],
-        model: Callable,
+        teacher_model: Callable,
+        student_model: Callable,
         optimizer: 'Optimizer',
         loss: Callable,
+        distillation_loss: Callable,
         scheduler: Optional['LRScheduler'] = None,
     ):
         super().__init__()
@@ -35,24 +38,38 @@ class ClassificationLightningModule(LightningModule):  # noqa: WPS214
             average='macro',
         )
         self.loss = loss
+        self.distillation_loss = distillation_loss
+
         self.model_cfg = model_cfg
 
-        self.model = model(num_classes=len(class_to_idx))
+        self.student_model = student_model(num_classes=len(class_to_idx))
+        self.teacher_model = teacher_model(num_classes=len(class_to_idx)).load_model()
 
         self._valid_metrics = metrics.clone(prefix='valid_')
         self._test_metrics = metrics.clone(prefix='test_')
         self.save_hyperparameters()
 
     def forward(self, images: Tensor) -> Tensor:
-        return self.model(images)
+        return self.student_model(images)
 
     def training_step(self, batch: List[Tensor]):  # noqa: WPS210
         images, targets = batch
-        logits = self.forward(images)
-        loss = self.loss(logits, targets)
+        student_logits = self.forward(images)
+
+        self.teacher_model.eval()
+        with torch.no_grad():
+            teacher_logits = self.teacher_model(images)
+
+        label_loss = self.loss(student_logits, targets)
+        loss = self.distillation_loss(
+            teacher_logits,
+            student_logits,
+            label_loss,
+        )
+
         self._train_loss(loss)
         self.log('step_loss', loss, on_step=True, prog_bar=True, logger=True)
-        return {'loss': loss, 'preds': logits, 'target': targets}
+        return {'loss': loss, 'target': targets}
 
     def validation_step(self, batch: List[Tensor], batch_index: int):  # noqa: WPS210
         images, targets = batch

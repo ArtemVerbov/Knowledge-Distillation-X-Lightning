@@ -1,17 +1,10 @@
-optimizer:
-  _target_: torch.optim.Adam
-  _partial_: true
-  lr: 2e-4
-scheduler:
-  _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
-  _partial_: true
-  patience: 1
-  verbose: true
+defaults:
+  - _self_
+  - lightning_module: knowledge_distillation
 experiment_config:
   _target_: src.config.ExperimentConfig
   model_config:
     _target_: src.config.ModelConfig
-    model: resnet18
     optimizer_frequency: 3
     interval: epoch
     monitor: mean_valid_loss
@@ -19,8 +12,8 @@ experiment_config:
     _target_: src.config.DataConfig
     dataset_name: image_classification_dataset
     img_size:
-    - 224
-    - 224
+    - 128
+    - 128
     batch_size: 128
     data_split:
     - 0.8
@@ -44,5 +37,5 @@ experiment_config:
   project_config:
     _target_: src.config.ProjectConfig
     project_name: image_classification
-    experiment_name: image_classification
+    experiment_name: ${lightning_module.experiment_name}
     track_in_clearml: true
