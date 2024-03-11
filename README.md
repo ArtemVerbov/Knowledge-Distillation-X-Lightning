@@ -29,11 +29,11 @@ To run training:
 | Student with KD  | 88                  |
 
 ## Model Training Results:
-Teacher: https://app.clear.ml/projects/27f17385bf22464fa816703a1659f67f/experiments/142f53eb005d47c69497e56fc85a64fe/output/execution
+Teacher: https://app.clear.ml/projects/27f17385bf22464fa816703a1659f67f/experiments/2867f03e68a64cddabef62b9779c8ebc/output/execution
 
 Student: https://app.clear.ml/projects/27f17385bf22464fa816703a1659f67f/experiments/142f53eb005d47c69497e56fc85a64fe/output/execution
 
-KD: https://app.clear.ml/projects/27f17385bf22464fa816703a1659f67f/experiments/142f53eb005d47c69497e56fc85a64fe/output/execution
+KD: https://app.clear.ml/projects/27f17385bf22464fa816703a1659f67f/experiments/9015bb59e7e940c5849557596cdf730a/output/execution
 
 ## Test Data Confusion Matrix
 
