@@ -38,8 +38,10 @@ KD: https://app.clear.ml/projects/27f17385bf22464fa816703a1659f67f/experiments/9
 ## Test Data Confusion Matrix
 
 ### Teacher
-![alt text](https://github.com/ArtemVerbov/ImageClassification/blob/main/media/confusion_matrix.png?raw=true)
+![alt text](https://github.com/ArtemVerbov/Knowledge-Distillation-X-Lightning/blob/main/media/teacher_result.jpeg?raw=true)
 
 ### Student
+![alt text](https://github.com/ArtemVerbov/Knowledge-Distillation-X-Lightning/blob/main/media/student_result.jpeg?raw=true)
 
 ### Knowledge Distillation
+![alt text](https://github.com/ArtemVerbov/Knowledge-Distillation-X-Lightning/blob/main/media/KD_result.jpeg?raw=true)
