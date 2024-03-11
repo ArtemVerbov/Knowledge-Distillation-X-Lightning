@@ -30,7 +30,9 @@ To run training:
 
 ## Model Training Results:
 Teacher: https://app.clear.ml/projects/27f17385bf22464fa816703a1659f67f/experiments/142f53eb005d47c69497e56fc85a64fe/output/execution
+
 Student: https://app.clear.ml/projects/27f17385bf22464fa816703a1659f67f/experiments/142f53eb005d47c69497e56fc85a64fe/output/execution
+
 KD: https://app.clear.ml/projects/27f17385bf22464fa816703a1659f67f/experiments/142f53eb005d47c69497e56fc85a64fe/output/execution
 
 ## Test Data Confusion Matrix
